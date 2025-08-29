@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>스크래치 복권 이벤트 (POC)</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap");
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f4f8;
+        margin: 0;
+        text-align: center;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      h1 {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+      }
+      #scratch-area {
+        position: relative;
+        width: 300px;
+        height: 150px;
+        cursor: pointer;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+      #scratch-area canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+      }
+      #result-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #e74c3c;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        opacity: 0; /* Initially hidden */
+        transition: opacity 0.5s ease-in-out;
+        white-space: nowrap;
+      }
+      .result-visible {
+        opacity: 1 !important;
+      }
+      .scratch-guide {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+      }
+      #reload-btn {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      #reload-btn:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>스크래치 이벤트 (POC)</h1>
+      <p class="scratch-guide">마우스를 문질러 복권을 긁어보세요!</p>
+      <div id="scratch-area">
+        <canvas id="scratch-canvas"></canvas>
+        <span id="result-text"></span>
+      </div>
+      <button id="reload-btn" style="display: none">다시 시작하기</button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("scratch-canvas");
+      const ctx = canvas.getContext("2d");
+      const resultText = document.getElementById("result-text");
+      const scratchArea = document.getElementById("scratch-area");
+      const reloadBtn = document.getElementById("reload-btn");
+
+      let isScratching = false;
+
+      // 복권 긁는 영역 설정
+      function setupCanvas() {
+        // 복권 영역에 맞춰 캔버스 크기 조정
+        canvas.width = scratchArea.offsetWidth;
+        canvas.height = scratchArea.offsetHeight;
+
+        // 회색 복권 커버 색상
+        ctx.fillStyle = "#bdc3c7";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // '스크래치' 텍스트
+        ctx.fillStyle = "#7f8c8d";
+        ctx.font = "2rem Noto Sans KR";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("긁어주세요!", canvas.width / 2, canvas.height / 2);
+
+        // 이벤트 리스너 재등록
+        canvas.addEventListener("mousedown", handleStart);
+        canvas.addEventListener("mousemove", handleMove);
+        canvas.addEventListener("mouseup", handleEnd);
+        canvas.addEventListener("touchstart", handleStart);
+        canvas.addEventListener("touchmove", handleMove);
+        canvas.addEventListener("touchend", handleEnd);
+      }
+
+      // 마우스 이벤트 리스너
+      function handleStart(e) {
+        e.preventDefault();
+        isScratching = true;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        scratch(x, y);
+      }
+
+      function handleMove(e) {
+        e.preventDefault();
+        if (!isScratching) return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || e.touches[0].clientX;
+        const clientY = e.clientY || e.touches[0].clientY;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        scratch(x, y);
+      }
+
+      function handleEnd() {
+        isScratching = false;
+        // 복권이 80% 이상 긁혔는지 확인
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        let transparentPixels = 0;
+        for (let i = 0; i < pixels.length; i += 4) {
+          if (pixels[i + 3] < 128) {
+            // 투명도가 낮은 픽셀 (긁힌 영역)
+            transparentPixels++;
+          }
+        }
+        const totalPixels = canvas.width * canvas.height;
+        if (transparentPixels / totalPixels > 0.8) {
+          showResult();
+        }
+      }
+
+      // 복권 긁기 로직
+      function scratch(x, y) {
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        ctx.arc(x, y, 25, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      // 결과 표시
+      function showResult() {
+        // 꽝 또는 당첨 랜덤 결정 (POC용)
+        const isWin = Math.random() < 0.5; // 50% 확률로 당첨
+        resultText.textContent = isWin
+          ? "1,000 포인트 당첨!"
+          : "아쉽지만 꽝이에요...";
+        resultText.style.color = isWin ? "#2ecc71" : "#e74c3c";
+        resultText.classList.add("result-visible");
+
+        // 스크래치 불가능하게 변경
+        canvas.removeEventListener("mousedown", handleStart);
+        canvas.removeEventListener("mousemove", handleMove);
+        canvas.removeEventListener("mouseup", handleEnd);
+        canvas.removeEventListener("touchstart", handleStart);
+        canvas.removeEventListener("touchmove", handleMove);
+        canvas.removeEventListener("touchend", handleEnd);
+
+        reloadBtn.style.display = "block";
+      }
+
+      // 다시 시작 버튼 클릭 이벤트
+      reloadBtn.addEventListener("click", () => {
+        setupCanvas();
+        resultText.classList.remove("result-visible");
+        reloadBtn.style.display = "none";
+      });
+
+      // 페이지 로드 시 초기 설정
+      window.onload = setupCanvas;
+    </script>
+  </body>
+</html>
