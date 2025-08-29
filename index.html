@@ -5,97 +5,353 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>스크래치 복권 이벤트 (POC)</title>
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap");
-      body {
-        font-family: "Noto Sans KR", sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #f0f4f8;
+      @import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap");
+
+      * {
         margin: 0;
-        text-align: center;
+        padding: 0;
+        box-sizing: border-box;
       }
-      .container {
+
+      body {
+        font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
         background-color: #ffffff;
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        max-width: 400px;
-        width: 90%;
+        margin: 0;
+        width: 375px;
+        max-width: 100vw;
+        height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Header */
+      .header {
+        height: 44px;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        position: relative;
+      }
+
+      .back-button {
+        width: 48px;
+        height: 48px;
+        border-radius: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 12px;
+        transition: background-color 0.2s ease;
+      }
+
+      .back-button:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      .back-icon {
+        width: 28px;
+        height: 28px;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      /* Main Content */
+      .main-content {
+        padding: 16px 0 0 0;
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: 32px;
       }
-      h1 {
-        color: #2c3e50;
-        font-size: 1.5rem;
-        margin-bottom: 20px;
+
+      /* Event Title Section */
+      .event-title-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        width: 343px;
+        max-width: calc(100% - 32px);
       }
+
+      .title-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+      }
+
+      .title-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .subtitle {
+        font-family: "Pretendard", sans-serif;
+        font-weight: 700;
+        font-size: 20px;
+        color: #afb3b8;
+        line-height: normal;
+        width: 277px;
+        margin-bottom: 0;
+      }
+
+      .main-title {
+        font-family: "Pretendard", sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        color: #1a1e21;
+        line-height: 36px;
+        width: 250px;
+        margin: 0;
+      }
+
+      /* Scratch Area */
       #scratch-area {
         position: relative;
-        width: 300px;
-        height: 150px;
+        width: 295px;
+        height: 295px;
         cursor: pointer;
-        border: 2px solid #ddd;
         border-radius: 10px;
         overflow: hidden;
-        margin-bottom: 20px;
+        background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjk1IiBoZWlnaHQ9IjI5NSIgdmlld0JveD0iMCAwIDI5NSAyOTUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyOTUiIGhlaWdodD0iMjk1IiByeD0iMTAiIGZpbGw9IiNBN0I5QzYiLz4KPHN2ZyB4PSI1MCIgeT0iMTAwIiB3aWR0aD0iMTk1IiBoZWlnaHQ9Ijk1IiB2aWV3Qm94PSIwIDAgMTk1IDk1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTAgMTBMMTg1IDEwQzE5MS42MjcgMTAgMTk3IDEyLjIzODYgMTk3IDE1VjgwQzE5NyA4Mi43NjE0IDE5MS42MjcgODUgMTg1IDg1SDEwQzMuMzczIDg1IC0yIDgyLjc2MTQgLTIgODBWMTVDLTIgMTIuMjM4NiAzLjM3MyAxMCAxMCAxMFoiIGZpbGw9InVybCgjZ3JhZGllbnQwX2xpbmVhcl8xXzIpIiBmaWxsLW9wYWNpdHk9IjAuNyIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDBfbGluZWFyXzFfMiIgeDE9IjAiIHkxPSIwIiB4Mj0iMTk3IiB5Mj0iOTUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0ZGRkZGRiIgc3RvcC1vcGFjaXR5PSIwLjMiLz4KPHN0b3Agb2Zmc2V0PSIwLjMiIHN0b3AtY29sb3I9IiNBRkZGRjAiIHN0b3Atb3BhY2l0eT0iMC44Ii8+CjxzdG9wIG9mZnNldD0iMC42IiBzdG9wLWNvbG9yPSIjRkZBRkVBIiBzdG9wLW9wYWNpdHk9IjAuOCIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNGRkZGODAiIHN0b3Atb3BhY2l0eT0iMC44Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border: 3px solid #464849;
+        box-shadow: 0 4px 12px rgba(70, 72, 73, 0.3);
       }
+
+      .scratch-border-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 10px;
+        pointer-events: none;
+        z-index: 1;
+      }
+
       #scratch-area canvas {
         position: absolute;
         top: 0;
         left: 0;
         z-index: 2;
+        border-radius: 10px;
       }
+
       #result-text {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 1;
-        font-size: 2rem;
-        font-weight: bold;
-        color: #e74c3c;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-        opacity: 0; /* Initially hidden */
+        font-size: 20px;
+        font-weight: 700;
+        color: #464849;
+        opacity: 0;
         transition: opacity 0.5s ease-in-out;
         white-space: nowrap;
+        font-family: "Pretendard", sans-serif;
       }
+
       .result-visible {
         opacity: 1 !important;
       }
-      .scratch-guide {
-        color: #7f8c8d;
-        font-size: 0.9rem;
-        margin-bottom: 10px;
+
+      /* Notice Section */
+      .notice-section {
+        width: 375px;
+        height: 364px;
+        position: relative;
+        margin-top: 0;
       }
+
+      .separator-line {
+        height: 8px;
+        background-color: #ededf2;
+        width: 100%;
+      }
+
+      .notice-content {
+        padding: 40px 16px 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .notice-title {
+        font-family: "Pretendard", sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+        color: #464849;
+        line-height: 28px;
+        margin-bottom: 8px;
+      }
+
+      .notice-list {
+        font-family: "Pretendard", sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        color: #afb3b8;
+        line-height: normal;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .notice-list li {
+        position: relative;
+        padding-left: 22.5px;
+        margin-bottom: 0;
+      }
+
+      .notice-list li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #afb3b8;
+      }
+
+      .notice-list li .bold {
+        font-weight: 700;
+      }
+
+      /* Bottom Indicator */
+      .bottom-indicator {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 34px;
+        background-color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        padding-bottom: 8px;
+      }
+
+      .home-indicator {
+        width: 134px;
+        height: 5px;
+        background-color: #000000;
+        border-radius: 100px;
+      }
+
       #reload-btn {
+        position: fixed;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
         background-color: #3498db;
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 50px;
-        font-size: 1rem;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: 700;
         cursor: pointer;
         transition: background-color 0.3s, transform 0.2s;
+        display: none;
+        z-index: 10;
       }
+
       #reload-btn:hover {
         background-color: #2980b9;
-        transform: translateY(-2px);
+        transform: translateX(-50%) translateY(-2px);
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>스크래치 이벤트 (POC)</h1>
-      <p class="scratch-guide">마우스를 문질러 복권을 긁어보세요!</p>
-      <div id="scratch-area">
-        <canvas id="scratch-canvas"></canvas>
-        <span id="result-text"></span>
-      </div>
-      <button id="reload-btn" style="display: none">다시 시작하기</button>
+    <!-- Header -->
+    <div class="header">
+      <button class="back-button">
+        <div
+          class="back-icon"
+          style="
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE1IDE4TDkgMTJMMTUgNiIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==');
+          "
+        ></div>
+      </button>
     </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Event Title Section -->
+      <div class="event-title-section">
+        <div class="title-container">
+          <div class="title-text">
+            <p class="subtitle">식권대장 이벤트</p>
+            <h1 class="main-title">식권을 긁어보세요</h1>
+          </div>
+        </div>
+
+        <!-- Scratch Area -->
+        <div id="scratch-area">
+          <canvas id="scratch-canvas"></canvas>
+          <span id="result-text">여기를 긁어보세요</span>
+          <div class="scratch-border-overlay"></div>
+        </div>
+      </div>
+
+      <!-- Notice Section -->
+      <div class="notice-section">
+        <div class="separator-line"></div>
+        <div class="notice-content">
+          <div class="notice-title">유의사항</div>
+          <ul class="notice-list">
+            <li>이벤트 등록 시 작성한 유의사항 문구가 보여지는 곳</li>
+            <li>
+              줄바꿈이나<br /><span class="bold">볼드처리도 가능하구요</span>
+            </li>
+            <li>이벤트 참여기간에 대한 안내도 넣을 수 있구요</li>
+            <li>
+              <span class="bold"
+                >참여 제한 횟수에 대한 안내나 혜택에 대한 설명, 혜택의 일괄 지급
+                일시에 대한 내용도 작성하실 수 있어요</span
+              >
+            </li>
+            <li>
+              1등 - xx 프리미엄 세트 (1명), 2등 - xx 1박스 (3명), 3등 - 1,000
+              포인트 (5명), 4등 - 꽝 (그 외)
+            </li>
+            <li>
+              그 외의 각종 유의사항에 대한 내용을 직접 그때 그때 마케팅팀에서
+              작성 가능하며 유의사항 내에 이미지를 넣을 수도 있답니다~ TEXT
+              타입이라 최대 글자 수는 약 16,000자 정도라 아주 여유있는
+              정도입니다.
+            </li>
+            <li>
+              이벤트 특성이나 경품 종류에 따라 유의사항은 변동성이 크기 때문에
+              디폴트로 작성되어 있는 기능은 지원하지 않으며, 그때 그때
+              마케팅팀에서 작성하시는 방향으로 영주님과 소통 완료되었답니다~~
+            </li>
+            <li>
+              이벤트 등록 시, 유의사항 설정 토글을 미사용으로 설정해둔 경우에는
+              해당 유의사항 영역이 아예 히든되용!
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Indicator -->
+    <div class="bottom-indicator">
+      <div class="home-indicator"></div>
+    </div>
+
+    <!-- Reload Button -->
+    <button id="reload-btn">다시 시작하기</button>
 
     <script>
       const canvas = document.getElementById("scratch-canvas");
@@ -112,16 +368,12 @@
         canvas.width = scratchArea.offsetWidth;
         canvas.height = scratchArea.offsetHeight;
 
-        // 회색 복권 커버 색상
-        ctx.fillStyle = "#bdc3c7";
+        // 회색 복권 커버 색상 (#A7B9C6 - 피그마 디자인에서 추출한 색상)
+        ctx.fillStyle = "#A7B9C6";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // '스크래치' 텍스트
-        ctx.fillStyle = "#7f8c8d";
-        ctx.font = "2rem Noto Sans KR";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("긁어주세요!", canvas.width / 2, canvas.height / 2);
+        // 스크래치 텍스트 숨김 (배경 이미지에 텍스트가 포함되어 있음)
+        resultText.style.opacity = "0";
 
         // 이벤트 리스너 재등록
         canvas.addEventListener("mousedown", handleStart);
@@ -136,6 +388,7 @@
       function handleStart(e) {
         e.preventDefault();
         isScratching = true;
+
         const rect = canvas.getBoundingClientRect();
         const clientX = e.clientX || e.touches[0].clientX;
         const clientY = e.clientY || e.touches[0].clientY;
@@ -206,6 +459,7 @@
       reloadBtn.addEventListener("click", () => {
         setupCanvas();
         resultText.classList.remove("result-visible");
+        resultText.textContent = "여기를 긁어보세요";
         reloadBtn.style.display = "none";
       });
 
