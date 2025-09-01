@@ -6,6 +6,7 @@ const guideText = document.getElementById("guide-text");
 const scratchArea = document.getElementById("scratch-area");
 const actionButtons = document.getElementById("action-buttons");
 const reloadBtn = document.getElementById("reload-btn");
+const subtitleElement = document.querySelector(".subtitle");
 
 // --- State ---
 let isScratching = false;
@@ -36,6 +37,12 @@ const resizeObserver = new ResizeObserver((entries) => {
  */
 function initializeEvent(data) {
   console.log("Initializing event with data:", data);
+
+  // subtitle에 eventId 표시
+  if (data.eventId && subtitleElement) {
+    subtitleElement.textContent = `식권대장 이벤트 - ${data.eventId}`;
+  }
+
   // 데이터를 임시 저장하고, #scratch-area 요소에 대한 크기 감지를 시작합니다.
   eventDataForSetup = data;
   resizeObserver.observe(scratchArea);
@@ -195,9 +202,14 @@ reloadBtn.addEventListener("click", () => {
 });
 
 window.addEventListener("load", () => {
+  // URL 파라미터에서 eventId 가져와서 subtitle에 표시
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("eventId");
+  if (eventId && subtitleElement) {
+    subtitleElement.textContent = `식권대장 이벤트 - ${eventId}`;
+  }
+
   if (window.nativeApp && window.nativeApp.onPageReady) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get("eventId");
     if (eventId) {
       window.nativeApp.onPageReady(eventId);
     } else {
