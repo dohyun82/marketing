@@ -1,0 +1,209 @@
+@import url("https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap");
+
+body {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #f0f4f8;
+}
+.lottery-bg {
+  background: linear-gradient(to bottom, #d1d5db, #f9fafb);
+  border-radius: 1.5rem;
+}
+
+.main-content {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.scratch-area-container {
+  position: relative;
+  width: 295px;
+  height: 295px;
+  margin: 0 auto;
+}
+
+#scratch-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+  background-image: url("scratch-background.svg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 3px solid #464849;
+  box-shadow: 0 4px 12px rgba(70, 72, 73, 0.3);
+}
+
+#scratch-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  border-radius: 10px;
+  touch-action: none;
+}
+
+#result-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  font-size: 20px;
+  font-weight: 700;
+  color: #464849;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  white-space: nowrap;
+  font-family: "Pretendard", sans-serif;
+}
+
+.result-visible {
+  opacity: 1 !important;
+}
+
+.guide-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  font-size: 20px;
+  font-weight: 700;
+  color: #464849;
+}
+
+/* Notice Section */
+.notice-section {
+  width: 100%;
+  background-color: #ffffff;
+}
+
+.separator-line {
+  height: 8px;
+  background-color: #ededf2;
+  width: 100%;
+}
+
+.notice-content {
+  padding: 40px 16px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notice-title {
+  font-family: "Pretendard", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #464849;
+  line-height: 28px;
+  margin-bottom: 8px;
+}
+
+.notice-list {
+  font-family: "Pretendard", sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #afb3b8;
+  line-height: normal;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notice-list li {
+  position: relative;
+  padding-left: 22.5px;
+  margin-bottom: 0;
+}
+
+.notice-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #afb3b8;
+}
+
+.notice-list li .bold {
+  font-weight: 700;
+}
+
+/* Bottom Indicator */
+.bottom-indicator {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 400px;
+  height: 34px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 8px;
+}
+
+.home-indicator {
+  width: 134px;
+  height: 5px;
+  background-color: #000000;
+  border-radius: 100px;
+}
+
+.action-buttons {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none; /* Initially hidden */
+    gap: 16px;
+    z-index: 10;
+    justify-content: center;
+}
+
+#reload-btn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.event-title-section {
+  background-color: #ffffff;
+  padding: 40px 0;
+}
+
+.title-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title-text {
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.main-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1e21;
+}

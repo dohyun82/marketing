@@ -1,25 +1,43 @@
 # Gemini Workspace Documentation
 
-This document provides context for the Gemini AI agent to understand and assist with the files in this directory.
+이 문서는 Gemini AI 에이전트가 이 디렉토리의 파일들을 이해하고 도움을 줄 수 있도록 컨텍스트를 제공합니다.
 
 ## Directory Overview
 
-**TODO:** Describe the purpose and contents of this directory. What is it for? What kind of information does it hold?
+이 디렉토리는 AI 마케팅 관련 프로젝트를 위한 워크스페이스입니다. Gemini AI와의 효율적인 협업을 위한 설정과 문서화 작업을 수행합니다.
 
-*   **Project Goal:**
-*   **Key Areas:**
+- **Project Goal:** Gemini AI가 한국어로 자연스럽게 응답하도록 설정하고, 마케팅 관련 작업을 지원하는 환경 구축
+- **Key Areas:** AI 설정, 문서화, 마케팅 콘텐츠 생성
+
+## Language Configuration
+
+**중요:** Gemini AI는 이 워크스페이스에서 작업할 때 반드시 한국어로 응답해야 합니다.
+
+### 필수 설정 사항
+
+1. **응답 언어**: 모든 응답을 한국어로 제공
+2. **설명 스타일**: 전문적이지만 이해하기 쉬운 한국어 사용
+3. **기술 용어**: 필요한 경우 한글 설명과 함께 영문 용어 표시
+4. **톤**: 객관적이고 사실적인 톤 유지
+
+### Gemini CLI 사용 시 적용 규칙
+
+- 사용자 질문에 한국어로 답변
+- 코드 설명 시 한국어 주석과 함께 제공
+- 오류 메시지나 경고도 한국어로 표시
+- 마케팅 콘텐츠 생성 시 자연스러운 한국어 사용
 
 ## Key Files
 
-**TODO:** List the most important files and briefly explain what they contain. As you add files to this project, update this section.
-
-*   `file1.ext`:
-*   `file2.ext`:
-*   `file3.ext`:
+- `GEMINI.md`: Gemini AI 설정 및 워크스페이스 문서 (현재 파일)
+- `index.html`: 메인 웹 페이지 파일 (471라인)
 
 ## Usage
 
-**TODO:** Explain how the contents of this directory are intended to be used.
+이 디렉토리의 내용은 다음과 같이 사용됩니다:
 
-*   **Primary Use Case:**
-*   **Workflows:**
+- **Primary Use Case:** Gemini AI와의 한국어 기반 협업 환경 구축
+- **Workflows:**
+  1. GEMINI.md 파일을 통해 AI의 응답 언어 설정
+  2. index.html 등의 파일에 대한 작업 요청 시 한국어로 응답
+  3. 마케팅 콘텐츠나 코드 관련 작업 시 한국어 설명 제공
