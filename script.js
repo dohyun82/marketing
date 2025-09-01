@@ -54,11 +54,27 @@ function showResult(result) {
 // --- Canvas & Event Logic ---
 
 function setupCanvas(scratchAreaConfig) {
-  canvas.width = scratchArea.offsetWidth;
-  canvas.height = scratchArea.offsetHeight;
+  // 1. 디바이스 픽셀 비율(DPR)을 가져옵니다.
+  const dpr = window.devicePixelRatio || 1;
 
+  // 2. CSS 픽셀 크기를 가져옵니다.
+  const rect = scratchArea.getBoundingClientRect();
+
+  // 3. CSS 크기에 DPR을 곱하여 실제 픽셀 크기를 설정합니다. (선명한 렌더링)
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+
+  // 4. 캔버스 요소의 스타일(CSS) 크기는 원래대로 유지합니다.
+  canvas.style.width = `${rect.width}px`;
+  canvas.style.height = `${rect.height}px`;
+
+  // 5. 캔버스 컨텍스트를 DPR만큼 확대하여 좌표계를 일치시킵니다.
+  ctx.scale(dpr, dpr);
+
+  // 이제 모든 그리기 작업은 CSS 픽셀 기준으로 동작합니다.
   ctx.fillStyle = scratchAreaConfig?.coverColor || "#A7B9C6";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // 그릴 때 너비와 높이는 CSS 픽셀 크기(rect.width)를 사용해야 합니다.
+  ctx.fillRect(0, 0, rect.width, rect.height);
 
   guideText.textContent = scratchAreaConfig?.guideText || "여기를 긁어보세요";
   guideText.style.opacity = "1";
