@@ -9,8 +9,25 @@ const reloadBtn = document.getElementById("reload-btn");
 
 // --- State ---
 let isScratching = false;
+let eventDataForSetup = null; // 데이터를 임시 저장할 변수
 
-// --- Functions ---
+// --- ResizeObserver ---
+// #scratch-area 요소의 크기 변경을 감지하여 캔버스 크기를 다시 설정합니다.
+// 웹뷰의 렌더링 지연 문제를 해결하는 가장 확실한 방법입니다.
+const resizeObserver = new ResizeObserver((entries) => {
+  for (let entry of entries) {
+    // entry.contentRect가 실제 요소의 크기입니다.
+    if (entry.contentRect.width > 0 && eventDataForSetup) {
+      console.log(
+        "ResizeObserver triggered. Setting up canvas with size:",
+        entry.contentRect
+      );
+      setupCanvas(eventDataForSetup.scratchArea, entry.contentRect);
+      // 캔버스 설정 후에는 관찰을 중단하여 불필요한 재실행을 방지합니다.
+      resizeObserver.disconnect();
+    }
+  }
+});
 
 /**
  * 1. NATIVE -> WEB
@@ -19,11 +36,9 @@ let isScratching = false;
  */
 function initializeEvent(data) {
   console.log("Initializing event with data:", data);
-  // Reset state
-  eventResultData = null;
-
-  // Setup canvas using data from bridge
-  setupCanvas(data.scratchArea);
+  // 데이터를 임시 저장하고, #scratch-area 요소에 대한 크기 감지를 시작합니다.
+  eventDataForSetup = data;
+  resizeObserver.observe(scratchArea);
 }
 
 /**
@@ -34,47 +49,34 @@ function initializeEvent(data) {
 function showResult(result) {
   console.log("Showing result:", result);
 
-  // Display result text
   resultText.textContent = result.message;
-  resultText.style.color = result.status === 'WIN' ? "#2ecc71" : "#e74c3c";
+  resultText.style.color = result.status === "WIN" ? "#2ecc71" : "#e74c3c";
   resultText.classList.add("result-visible");
 
-  // Disable scratching
-  canvas.removeEventListener("mousedown", handleStart);
-  canvas.removeEventListener("mousemove", handleMove);
-  canvas.removeEventListener("mouseup", handleEnd);
-  canvas.removeEventListener("touchstart", handleStart);
-  canvas.removeEventListener("touchmove", handleMove);
-  canvas.removeEventListener("touchend", handleEnd);
-
-  // Show action buttons
+  // revealAll 함수에서 이벤트 리스너가 제거되므로 여기서는 중복 제거
   actionButtons.style.display = "flex";
 }
 
 // --- Canvas & Event Logic ---
 
-function setupCanvas(scratchAreaConfig) {
-  // 1. 디바이스 픽셀 비율(DPR)을 가져옵니다.
+// setupCanvas 함수가 부모 요소의 실제 크기를 인자로 받도록 수정합니다.
+function setupCanvas(scratchAreaConfig, rect) {
   const dpr = window.devicePixelRatio || 1;
 
-  // 2. CSS 픽셀 크기를 가져옵니다.
-  const rect = scratchArea.getBoundingClientRect();
-
-  // 3. CSS 크기에 DPR을 곱하여 실제 픽셀 크기를 설정합니다. (선명한 렌더링)
+  // getBoundingClientRect() 대신 ResizeObserver가 전달한 정확한 크기(rect)를 사용합니다.
   canvas.width = rect.width * dpr;
   canvas.height = rect.height * dpr;
 
-  // 4. 캔버스 요소의 스타일(CSS) 크기는 원래대로 유지합니다.
   canvas.style.width = `${rect.width}px`;
   canvas.style.height = `${rect.height}px`;
 
-  // 5. 캔버스 컨텍스트를 DPR만큼 확대하여 좌표계를 일치시킵니다.
   ctx.scale(dpr, dpr);
 
-  // 이제 모든 그리기 작업은 CSS 픽셀 기준으로 동작합니다.
   ctx.fillStyle = scratchAreaConfig?.coverColor || "#A7B9C6";
-  // 그릴 때 너비와 높이는 CSS 픽셀 크기(rect.width)를 사용해야 합니다.
   ctx.fillRect(0, 0, rect.width, rect.height);
+
+  // 캔버스의 opacity를 다시 1로 설정 (다시 시작하기 등)
+  canvas.style.opacity = "1";
 
   guideText.textContent = scratchAreaConfig?.guideText || "여기를 긁어보세요";
   guideText.style.opacity = "1";
@@ -82,7 +84,6 @@ function setupCanvas(scratchAreaConfig) {
   resultText.classList.remove("result-visible");
   actionButtons.style.display = "none";
 
-  // Add event listeners
   canvas.addEventListener("mousedown", handleStart);
   canvas.addEventListener("mousemove", handleMove);
   canvas.addEventListener("mouseup", handleEnd);
@@ -115,10 +116,19 @@ function handleMove(e) {
   scratch(x, y);
 }
 
+function scratch(x, y) {
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.beginPath();
+  ctx.arc(x, y, 25, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+// --- 이전 대화에서 개선된 함수들 ---
+
 function handleEnd() {
   if (!isScratching) return;
   isScratching = false;
-  
+
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const pixels = imageData.data;
   let transparentPixels = 0;
@@ -127,38 +137,56 @@ function handleEnd() {
       transparentPixels++;
     }
   }
+
   const totalPixels = canvas.width * canvas.height;
-  if (transparentPixels / totalPixels > 0.6) {
-    // 3. WEB -> NATIVE: Notify native app to participate
-    if (window.nativeApp && window.nativeApp.participateEvent) {
-      window.nativeApp.participateEvent();
-    } else {
-      console.log("Not in App context. Simulating result.");
-      const isWin = Math.random() < 0.5;
-      showResult({
-        status: isWin ? 'WIN' : 'LOSE',
-        message: isWin ? '1,000 포인트 당첨!' : '아쉽지만 꽝이에요...',
-        prize: isWin ? { grade: '3등', name: '1,000 포인트' } : null
-      });
-    }
+  const scratchedRatio = transparentPixels / totalPixels;
+
+  if (scratchedRatio > 0.3) {
+    revealAll();
   }
 }
 
-function scratch(x, y) {
-  ctx.globalCompositeOperation = "destination-out";
-  ctx.beginPath();
-  ctx.arc(x, y, 25, 0, 2 * Math.PI);
-  ctx.fill();
+function revealAll() {
+  canvas.removeEventListener("mousedown", handleStart);
+  canvas.removeEventListener("mousemove", handleMove);
+  canvas.removeEventListener("mouseup", handleEnd);
+  canvas.removeEventListener("touchstart", handleStart);
+  canvas.removeEventListener("touchmove", handleMove);
+  canvas.removeEventListener("touchend", handleEnd);
+
+  let opacity = 1;
+  const fadeOut = setInterval(() => {
+    opacity -= 0.1;
+    if (opacity <= 0) {
+      clearInterval(fadeOut);
+      canvas.style.opacity = "0";
+      requestResult();
+    } else {
+      canvas.style.opacity = opacity.toString();
+    }
+  }, 20);
 }
 
-// --- Button Event Listeners ---
+function requestResult() {
+  if (window.nativeApp && window.nativeApp.participateEvent) {
+    window.nativeApp.participateEvent();
+  } else {
+    console.log("Not in App context. Simulating result.");
+    const isWin = Math.random() < 0.5;
+    showResult({
+      status: isWin ? "WIN" : "LOSE",
+      message: isWin ? "1,000 포인트 당첨!" : "아쉽지만 꽝이에요...",
+      prize: isWin ? { grade: "3등", name: "1,000 포인트" } : null,
+    });
+  }
+}
+
+// --- Button Event Listeners & Page Load ---
 
 reloadBtn.addEventListener("click", () => {
-  // Re-initialization should be triggered by the native app.
-  // We just signal that the page is ready again.
   if (window.nativeApp && window.nativeApp.onPageReady) {
     const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get('eventId');
+    const eventId = urlParams.get("eventId");
     window.nativeApp.onPageReady(eventId);
   } else {
     console.log("Simulating reload");
@@ -166,20 +194,16 @@ reloadBtn.addEventListener("click", () => {
   }
 });
 
-
-
-window.addEventListener('load', () => {
-  // 5. WEB -> NATIVE: Notify native app that the page is ready
+window.addEventListener("load", () => {
   if (window.nativeApp && window.nativeApp.onPageReady) {
     const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get('eventId');
+    const eventId = urlParams.get("eventId");
     if (eventId) {
       window.nativeApp.onPageReady(eventId);
     } else {
       console.error("Event ID not found in URL.");
     }
   } else {
-    // Fallback for testing in a browser without the native app context
     console.log("Not in App context. Simulating initializeEvent for testing.");
     initializeEvent({
       eventId: "evt_test_123",
@@ -187,14 +211,14 @@ window.addEventListener('load', () => {
       subtitle: "식권대장 이벤트",
       scratchArea: {
         coverColor: "#A7B9C6",
-        guideText: "여기를 긁어보세요"
+        guideText: "여기를 긁어보세요",
       },
       rules: [],
       prizes: [
         { grade: "1등", name: "프리미엄 세트 (1명)" },
         { grade: "2등", name: "1박스 (3명)" },
-        { grade: "3등", name: "1,000 포인트 (5명)" }
-      ]
+        { grade: "3등", name: "1,000 포인트 (5명)" },
+      ],
     });
   }
 });
